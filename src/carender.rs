@@ -1,37 +1,44 @@
-extern crate image;
-
-use opengl_graphics::GlGraphics;
+use ::image;
+pub use graphics::*;
+use image::RgbaImage;
+use opengl_graphics::{GlGraphics, Texture, TextureSettings};
 use piston::input::RenderArgs;
-use image::ImageBuffer;
-use image::Rgba;
 
-use crate::caengine::Cell;
-use self::image::RgbaImage;
+use crate::caengine::SandBox;
 
 pub struct CaRender {
-    gl: GlGraphics,
+    width: u32,
+    height: u32,
 }
 
 impl CaRender {
-    pub fn render_sandbox(&mut self, cells: *const Cell, gl: *mut GlGraphics, args: &RenderArgs) {
-        use graphics::*;
+    pub fn render_sandbox(&mut self, sandbox: &SandBox, gl: &mut GlGraphics, args: &RenderArgs) {
 
-        const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-        const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
+        //Turn the buffer into a texture
+        let cell_tex = {
+            let img: image::RgbaImage  = image::ImageBuffer::from_fn(
+                self.width as u32, self.height as u32,
+                |x, y| sandbox.to_rgba(x as i32, y as i32));
 
-        let square = rectangle::square(0.0, 0.0, 50.0);
-        let rotation = self.rotation;
-        let (x, y) = (args.window_size[0] / 2.0, args.window_size[1] / 2.0);
 
-        self.gl.draw(args.viewport(), |c, gl| {
-            let img: RgbaImage = ImageBuffer::from_fn(
-                args.window_size[0] as u32, args.window_size[1] as u32,
-                |
-            );
+            Texture::from_image(
+                &img,
+                &TextureSettings::new(),
+            )
+        };
+
+        gl.draw(args.viewport(), |c, g| {
             // Clear the screen
-            clear(GREEN, gl);
-            //Draw cells:
-
+            graphics::clear(graphics::color::TRANSPARENT, g);
+            //Draw image
+            Image::new().draw(&cell_tex, &c.draw_state, c.transform, g);
         });
+    }
+
+    pub fn new(width: u32, height: u32) -> CaRender {
+        CaRender {
+            width,
+            height,
+        }
     }
 }
