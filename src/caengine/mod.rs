@@ -117,7 +117,7 @@ impl SandBox {
                 EMPTY_CELL
             }
         }).collect();
-        self.cells = newCells;
+        self.cells = new_cells;
     }
 
 
